@@ -1,13 +1,27 @@
-import { Search, Book, GitBranch, Menu } from 'lucide-react';
+import { Search, GitBranch, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   onSearchClick: () => void;
   onMobileMenuClick: () => void;
+  activeTab?: 'terminology' | 'core' | 'adapters' | 'plugins';
 }
 
-export function Header({ onSearchClick, onMobileMenuClick }: HeaderProps) {
+export function Header({ onSearchClick, onMobileMenuClick, activeTab }: HeaderProps) {
+  const location = useLocation();
+  
+  const getActiveTab = () => {
+    if (activeTab) return activeTab;
+    if (location.pathname.startsWith('/core')) return 'core';
+    if (location.pathname.startsWith('/adapters')) return 'adapters';
+    if (location.pathname.startsWith('/plugins')) return 'plugins';
+    return 'terminology';
+  };
+  
+  const currentTab = getActiveTab();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -19,8 +33,8 @@ export function Header({ onSearchClick, onMobileMenuClick }: HeaderProps) {
             <Menu className="w-5 h-5" />
           </button>
           
-          <a href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20">
               <span className="text-primary-foreground font-bold text-sm">Lx</span>
             </div>
             <span className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
@@ -29,34 +43,54 @@ export function Header({ onSearchClick, onMobileMenuClick }: HeaderProps) {
             <span className="hidden sm:inline text-muted-foreground text-sm font-mono">
               docs
             </span>
-          </a>
+          </Link>
         </div>
 
         <nav className="hidden md:flex items-center gap-1">
-          <a 
-            href="/" 
-            className="px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          <Link 
+            to="/" 
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-colors",
+              currentTab === 'terminology' 
+                ? "text-primary hover:text-primary/80" 
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
             Terminology
-          </a>
-          <a 
-            href="#" 
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          </Link>
+          <Link 
+            to="/core" 
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-colors",
+              currentTab === 'core' 
+                ? "text-primary hover:text-primary/80" 
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
             Core
-          </a>
-          <a 
-            href="#" 
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          </Link>
+          <Link 
+            to="/adapters" 
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-colors",
+              currentTab === 'adapters' 
+                ? "text-primary hover:text-primary/80" 
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
             Adapters
-          </a>
-          <a 
-            href="#" 
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          </Link>
+          <Link 
+            to="/plugins" 
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-colors",
+              currentTab === 'plugins' 
+                ? "text-primary hover:text-primary/80" 
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
             Plugins
-          </a>
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
