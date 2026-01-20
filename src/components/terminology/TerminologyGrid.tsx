@@ -30,7 +30,7 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
       {/* Hero section */}
       <div className="mb-12 relative">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(190_95%_50%/0.15),transparent)]" />
-        <div className="relative">
+        <div className="relative pt-4 ps-4">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-primary" />
             <span className="text-sm font-medium text-primary">v1.0 Stable</span>
