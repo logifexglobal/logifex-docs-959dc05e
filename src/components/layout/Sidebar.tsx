@@ -2,19 +2,26 @@ import { terminology, layerInfo, type Layer, type Term } from '@/data/terminolog
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface SidebarProps {
   activeTerm: string | null;
   onTermSelect: (termId: string) => void;
   isOpen: boolean;
   onClose: () => void;
+  filterLayer?: Layer;
 }
 
 const layers: Layer[] = ['core', 'plugin', 'ui', 'tooling', 'meta'];
 
-export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose }: SidebarProps) {
-  const [expandedLayers, setExpandedLayers] = useState<Set<Layer>>(new Set(layers));
+export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose, filterLayer }: SidebarProps) {
+  const displayLayers = filterLayer ? [filterLayer] : layers;
+  const [expandedLayers, setExpandedLayers] = useState<Set<Layer>>(new Set(displayLayers));
+
+  // Update expanded layers when filterLayer changes
+  useEffect(() => {
+    setExpandedLayers(new Set(filterLayer ? [filterLayer] : layers));
+  }, [filterLayer]);
 
   const toggleLayer = (layer: Layer) => {
     setExpandedLayers(prev => {
@@ -28,7 +35,7 @@ export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose }: SidebarPr
     });
   };
 
-  const groupedTerms = layers.reduce((acc, layer) => {
+  const groupedTerms = displayLayers.reduce((acc, layer) => {
     acc[layer] = terminology.filter(t => t.layer === layer);
     return acc;
   }, {} as Record<Layer, Term[]>);
@@ -53,8 +60,8 @@ export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose }: SidebarPr
             Terminology Map
           </h2>
           
-          <div className="space-y-2">
-            {layers.map(layer => (
+        <div className="space-y-2">
+            {displayLayers.map(layer => (
               <div key={layer} className="space-y-1">
                 <button
                   onClick={() => toggleLayer(layer)}
