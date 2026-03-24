@@ -1,4 +1,4 @@
-import { terminology, layerInfo, type Layer, type Term } from '@/data/terminology';
+import { terminology, lukTerminology, allTerminology, layerInfo, type Layer, type Term } from '@/data/terminology';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
@@ -16,33 +16,45 @@ const layers: Layer[] = ['core', 'plugin', 'ui', 'tooling', 'meta'];
 
 export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose, filterLayer }: SidebarProps) {
   const displayLayers = filterLayer ? [filterLayer] : layers;
-  const [expandedLayers, setExpandedLayers] = useState<Set<Layer>>(new Set(displayLayers));
+  const [expandedLayers, setExpandedLayers] = useState<Set<string>>(new Set(displayLayers));
+  const [lukExpanded, setLukExpanded] = useState(false);
+  const [expandedLukLayers, setExpandedLukLayers] = useState<Set<Layer>>(new Set());
 
-  // Update expanded layers when filterLayer changes
   useEffect(() => {
     setExpandedLayers(new Set(filterLayer ? [filterLayer] : layers));
   }, [filterLayer]);
 
-  const toggleLayer = (layer: Layer) => {
+  const toggleLayer = (layer: string) => {
     setExpandedLayers(prev => {
       const next = new Set(prev);
-      if (next.has(layer)) {
-        next.delete(layer);
-      } else {
-        next.add(layer);
-      }
+      if (next.has(layer)) next.delete(layer);
+      else next.add(layer);
       return next;
     });
   };
 
-  const groupedTerms = displayLayers.reduce((acc, layer) => {
+  const toggleLukLayer = (layer: Layer) => {
+    setExpandedLukLayers(prev => {
+      const next = new Set(prev);
+      if (next.has(layer)) next.delete(layer);
+      else next.add(layer);
+      return next;
+    });
+  };
+
+  const coreGrouped = displayLayers.reduce((acc, layer) => {
     acc[layer] = terminology.filter(t => t.layer === layer);
     return acc;
   }, {} as Record<Layer, Term[]>);
 
+  const lukGrouped = layers.reduce((acc, layer) => {
+    const terms = lukTerminology.filter(t => t.layer === layer);
+    if (terms.length > 0) acc[layer] = terms;
+    return acc;
+  }, {} as Partial<Record<Layer, Term[]>>);
+
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
@@ -57,10 +69,10 @@ export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose, filterLayer
       )}>
         <div className="p-4">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-            Terminology Map
+            Core Ecosystem
           </h2>
           
-        <div className="space-y-2">
+          <div className="space-y-2">
             {displayLayers.map(layer => (
               <div key={layer} className="space-y-1">
                 <button
@@ -72,7 +84,7 @@ export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose, filterLayer
                       {layerInfo[layer].label}
                     </Badge>
                     <span className="text-muted-foreground text-xs">
-                      ({groupedTerms[layer].length})
+                      ({coreGrouped[layer].length})
                     </span>
                   </div>
                   <ChevronDown className={cn(
@@ -83,7 +95,7 @@ export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose, filterLayer
                 
                 {expandedLayers.has(layer) && (
                   <div className="ml-3 border-l border-border pl-3 space-y-0.5">
-                    {groupedTerms[layer].map(term => (
+                    {coreGrouped[layer].map(term => (
                       <button
                         key={term.id}
                         onClick={() => {
@@ -97,9 +109,9 @@ export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose, filterLayer
                             : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         )}
                       >
-                        <span className="font-mono">{term.name}</span>
+                        <span className="font-mono truncate">{term.name}</span>
                         {term.knowledge === 'mandatory' && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
                         )}
                       </button>
                     ))}
@@ -107,6 +119,75 @@ export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose, filterLayer
                 )}
               </div>
             ))}
+          </div>
+
+          {/* LUK Section */}
+          <div className="mt-6 pt-4 border-t border-border">
+            <button
+              onClick={() => {
+                setLukExpanded(!lukExpanded);
+                if (!lukExpanded && expandedLukLayers.size === 0) {
+                  setExpandedLukLayers(new Set(Object.keys(lukGrouped) as Layer[]));
+                }
+              }}
+              className="w-full flex items-center justify-between mb-3"
+            >
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                LUK Utilities
+              </h2>
+              <ChevronDown className={cn(
+                "w-4 h-4 text-muted-foreground transition-transform",
+                lukExpanded ? "rotate-0" : "-rotate-90"
+              )} />
+            </button>
+
+            {lukExpanded && (
+              <div className="space-y-2">
+                {(Object.keys(lukGrouped) as Layer[]).map(layer => (
+                  <div key={`luk-${layer}`} className="space-y-1">
+                    <button
+                      onClick={() => toggleLukLayer(layer)}
+                      className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-md transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Badge variant={layer} className="text-xs">
+                          {layerInfo[layer].label}
+                        </Badge>
+                        <span className="text-muted-foreground text-xs">
+                          ({lukGrouped[layer]!.length})
+                        </span>
+                      </div>
+                      <ChevronDown className={cn(
+                        "w-4 h-4 text-muted-foreground transition-transform",
+                        expandedLukLayers.has(layer) ? "rotate-0" : "-rotate-90"
+                      )} />
+                    </button>
+                    
+                    {expandedLukLayers.has(layer) && (
+                      <div className="ml-3 border-l border-border pl-3 space-y-0.5">
+                        {lukGrouped[layer]!.map(term => (
+                          <button
+                            key={term.id}
+                            onClick={() => {
+                              onTermSelect(term.id);
+                              onClose();
+                            }}
+                            className={cn(
+                              "w-full flex items-center justify-between px-3 py-1.5 text-sm rounded-md transition-colors text-left",
+                              activeTerm === term.id
+                                ? "bg-accent text-foreground"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                            )}
+                          >
+                            <span className="font-mono truncate text-xs">{term.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         
@@ -117,7 +198,7 @@ export function Sidebar({ activeTerm, onTermSelect, isOpen, onClose, filterLayer
               <span>Mandatory knowledge</span>
             </div>
             <p className="leading-relaxed">
-              v1.0 · Last updated January 2026
+              v1.0 — v12.0 · Last updated March 2026
             </p>
           </div>
         </div>

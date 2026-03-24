@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { terminology, layerInfo, type Layer, type Knowledge } from '@/data/terminology';
+import { terminology, lukTerminology, layerInfo, type Layer, type Knowledge, type Section } from '@/data/terminology';
 import { TermCard } from './TermCard';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Filter, LayoutGrid, List, Sparkles } from 'lucide-react';
+import { Filter, LayoutGrid, List, Sparkles, Box, Wrench } from 'lucide-react';
 
 interface TerminologyGridProps {
   onTermSelect: (termId: string) => void;
@@ -13,27 +13,33 @@ const layers: Layer[] = ['core', 'plugin', 'ui', 'tooling', 'meta'];
 const knowledgeLevels: Knowledge[] = ['mandatory', 'optional', 'advanced'];
 
 export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
+  const [activeSection, setActiveSection] = useState<Section>('core-ecosystem');
   const [activeLayer, setActiveLayer] = useState<Layer | 'all'>('all');
   const [activeKnowledge, setActiveKnowledge] = useState<Knowledge | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const filteredTerms = terminology.filter(term => {
+  const sourceTerms = activeSection === 'luk' ? lukTerminology : terminology;
+
+  const filteredTerms = sourceTerms.filter(term => {
     if (activeLayer !== 'all' && term.layer !== activeLayer) return false;
     if (activeKnowledge !== 'all' && term.knowledge !== activeKnowledge) return false;
     return true;
   });
 
-  const mandatoryCount = terminology.filter(t => t.knowledge === 'mandatory').length;
+  const mandatoryCount = sourceTerms.filter(t => t.knowledge === 'mandatory').length;
+
+  // Check if a layer has terms in the current section
+  const layerHasTerms = (layer: Layer) => sourceTerms.some(t => t.layer === layer);
 
   return (
     <div className="animate-fade-in">
       {/* Hero section */}
-      <div className="mb-12 relative">
+      <div className="mb-8 relative">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(190_95%_50%/0.15),transparent)]" />
         <div className="relative pt-4 ps-4">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium text-primary">v1.0 Stable</span>
+            <span className="text-sm font-medium text-primary">v1.0 — v12.0</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             Terminology Map
@@ -44,7 +50,7 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
           </p>
           <div className="flex items-center gap-6 mt-6 text-sm text-muted-foreground">
             <span>
-              <strong className="text-foreground">{terminology.length}</strong> terms
+              <strong className="text-foreground">{sourceTerms.length}</strong> terms
             </span>
             <span>
               <strong className="text-cyan-400">{mandatoryCount}</strong> mandatory
@@ -53,6 +59,36 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
               <strong className="text-foreground">5</strong> layers
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Section Switcher */}
+      <div className="mb-8">
+        <div className="inline-flex items-center rounded-lg border border-border bg-card p-1 gap-1">
+          <button
+            onClick={() => { setActiveSection('core-ecosystem'); setActiveLayer('all'); setActiveKnowledge('all'); }}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200",
+              activeSection === 'core-ecosystem'
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+            )}
+          >
+            <Box className="w-4 h-4" />
+            Core Ecosystem
+          </button>
+          <button
+            onClick={() => { setActiveSection('luk'); setActiveLayer('all'); setActiveKnowledge('all'); }}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200",
+              activeSection === 'luk'
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+            )}
+          >
+            <Wrench className="w-4 h-4" />
+            LUK Utilities
+          </button>
         </div>
       </div>
 
@@ -80,10 +116,12 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
               onClick={() => setActiveLayer(layer)}
               className={cn(
                 "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                !layerHasTerms(layer) && "opacity-40 cursor-not-allowed",
                 activeLayer === layer
                   ? "bg-accent text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               )}
+              disabled={!layerHasTerms(layer)}
             >
               <Badge variant={layer} className="pointer-events-none">
                 {layerInfo[layer].label}
@@ -147,7 +185,7 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
       {/* Results count */}
       <div className="mb-6">
         <p className="text-sm text-muted-foreground">
-          Showing <strong className="text-foreground">{filteredTerms.length}</strong> terms
+          Showing <strong className="text-foreground">{filteredTerms.length}</strong> {activeSection === 'luk' ? 'utility' : ''} terms
           {activeLayer !== 'all' && (
             <> in <Badge variant={activeLayer}>{layerInfo[activeLayer].label}</Badge></>
           )}
@@ -179,8 +217,15 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
       </div>
 
       {filteredTerms.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No terms match your filters.</p>
+        <div className="text-center py-16 border border-dashed border-border rounded-lg">
+          <div className="text-muted-foreground space-y-2">
+            <p className="text-lg font-medium">No terms in this category yet</p>
+            <p className="text-sm">
+              {activeSection === 'luk' 
+                ? 'LUK Utility terms for this layer are coming soon.' 
+                : 'No terms match your current filters.'}
+            </p>
+          </div>
         </div>
       )}
     </div>
