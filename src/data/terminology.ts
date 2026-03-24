@@ -1,6 +1,7 @@
 export type Layer = 'core' | 'plugin' | 'ui' | 'tooling' | 'meta';
 export type Knowledge = 'mandatory' | 'optional' | 'advanced';
 export type Status = 'stable' | 'beta' | 'deprecated';
+export type Section = 'core-ecosystem' | 'luk';
 
 export interface Term {
   id: string;
@@ -9,6 +10,7 @@ export interface Term {
   knowledge: Knowledge;
   status: Status;
   version: string;
+  section?: Section;
   oneLine: string;
   mentalModel: string;
   whyNeeded: string;
