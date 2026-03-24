@@ -1,6 +1,7 @@
 export type Layer = 'core' | 'plugin' | 'ui' | 'tooling' | 'meta';
 export type Knowledge = 'mandatory' | 'optional' | 'advanced';
 export type Status = 'stable' | 'beta' | 'deprecated';
+export type Section = 'core-ecosystem' | 'luk';
 
 export interface Term {
   id: string;
@@ -9,6 +10,7 @@ export interface Term {
   knowledge: Knowledge;
   status: Status;
   version: string;
+  section?: Section;
   oneLine: string;
   mentalModel: string;
   whyNeeded: string;
@@ -3408,16 +3410,462 @@ export const terminology: Term[] = [
   },
 ];
 
+// LUK Utility Terms
+export const lukTerminology: Term[] = [
+  {
+    id: 'luk-booking-engine',
+    name: 'LFX.Util.BookingEngine',
+    layer: 'tooling',
+    knowledge: 'optional',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'A high-performance, deterministic utility responsible for time-slot generation and availability management.',
+    mentalModel: 'Think of the BookingEngine as a precise clock factory. It does not decide who gets an appointment—it generates every possible valid time slot, then hands them to the system for orchestration. It abstracts complex calendar logic away from the UI, ensuring that all booking actions follow a unified Core Protocol.',
+    whyNeeded: 'Without a centralized booking utility, every plugin would reinvent calendar logic, leading to inconsistencies, race conditions, and conflicting availability states. The BookingEngine ensures deterministic, Core-governed time management across the entire ecosystem.',
+    guarantees: [
+      'All time-slot generation follows a single deterministic algorithm',
+      'Calendar logic is fully abstracted from UI and plugin layers',
+      'All booking actions route through the Core Protocol',
+      'Time zone handling is consistent and governed by Core',
+    ],
+    antiPatterns: [
+      'Building custom calendar logic in a plugin instead of using BookingEngine',
+      'Directly manipulating time slots without going through the utility',
+      'Assuming BookingEngine handles payment—it handles time, not money',
+    ],
+    relationships: [
+      { termId: 'luk-foundation', relation: 'part of' },
+      { termId: 'luk-atomic-slot-locking', relation: 'enables' },
+      { termId: 'luk-availability-orchestrator', relation: 'powers' },
+      { termId: 'luk-booking-state-persistence', relation: 'feeds into' },
+      { termId: 'handled-execution', relation: 'wrapped by' },
+    ],
+    notThis: [
+      'Not a calendar UI—BookingEngine is logic, not presentation',
+      'Not a payment processor—use LFX.Util.PaymentGateway for financial transactions',
+    ],
+    lifecycle: 'Introduced in v11. Part of the LFX Utility Kit (LUK) layer.',
+    example: 'A salon plugin calls LFX.Util.BookingEngine.generateSlots({ provider: "stylist-A", duration: 30, date: "2026-03-24" }). The engine returns all valid 30-minute windows, already accounting for existing bookings and working hours.',
+    futureEvolution: 'v13 may introduce predictive slot suggestions based on Telemetry Insight patterns.',
+  },
+  {
+    id: 'luk-universal-search',
+    name: 'LFX.Util.UniversalSearch',
+    layer: 'tooling',
+    knowledge: 'optional',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'A global discovery utility powered by LFX-Vector and semantic indexing for intent-based search.',
+    mentalModel: 'UniversalSearch is a librarian who understands what you mean, not just what you say. Instead of matching keywords, it interprets intent using vector-based semantic indexing, returning results that align with the user\'s actual need across any data domain.',
+    whyNeeded: 'Traditional keyword search fails when users do not know exact terminology. UniversalSearch provides a unified discovery layer that works across products, services, users, and any industry-agnostic data, reducing cognitive load and increasing findability.',
+    guarantees: [
+      'Search operates on semantic intent, not just keyword matching',
+      'Results are ranked by relevance using vector similarity',
+      'All indexed data respects Capability Registry permissions',
+      'Search queries never bypass data access boundaries',
+    ],
+    antiPatterns: [
+      'Building a custom search index in a plugin instead of using UniversalSearch',
+      'Exposing search results that bypass Capability Registry checks',
+      'Using UniversalSearch for exact-match lookups where simple queries suffice',
+    ],
+    relationships: [
+      { termId: 'luk-foundation', relation: 'part of' },
+      { termId: 'capability-registry-cr', relation: 'respects permissions from' },
+      { termId: 'luk-resource-aware-logic', relation: 'adapts depth via' },
+      { termId: 'isolated-sandboxing', relation: 'data isolation enforced by' },
+    ],
+    notThis: [
+      'Not a database query engine—UniversalSearch is a discovery layer, not a data access tool',
+      'Not AI-autonomous—results are deterministic based on indexed vectors',
+    ],
+    lifecycle: 'Introduced in v11. Semantic capabilities expand as vector indexing matures.',
+    example: 'A user types "something for back pain" into a health marketplace. UniversalSearch interprets the intent and returns massage services, physiotherapy appointments, and ergonomic products—not just items with "back pain" in the title.',
+    futureEvolution: 'v13 may add federated search across multiple LFX ecosystem instances.',
+  },
+  {
+    id: 'luk-payment-gateway',
+    name: 'LFX.Util.PaymentGateway',
+    layer: 'tooling',
+    knowledge: 'optional',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'A pre-governed financial interface that acts as a secure bridge between the LFX Core and third-party processors.',
+    mentalModel: 'PaymentGateway is an armored courier. It carries sensitive financial data between your plugin and external payment processors, but it never opens the envelope. All transaction data flows through Explicit Grant channels, fully isolated from standard plugin logic.',
+    whyNeeded: 'Financial transactions require the highest level of security isolation. PaymentGateway ensures that sensitive data (card numbers, tokens, bank details) never touches plugin memory, preventing accidental exposure and ensuring PCI-compliant handling.',
+    guarantees: [
+      'Sensitive transaction data is handled via Explicit Grant only',
+      'Financial data is fully isolated from standard plugin logic',
+      'All transactions generate immutable audit trails with AEC codes',
+      'Gateway supports multiple third-party processors without plugin changes',
+    ],
+    antiPatterns: [
+      'Handling payment data directly in plugin code',
+      'Bypassing PaymentGateway for "simpler" direct API calls',
+      'Storing transaction tokens in plugin-accessible storage',
+    ],
+    relationships: [
+      { termId: 'luk-foundation', relation: 'part of' },
+      { termId: 'explicit-grant', relation: 'security model from' },
+      { termId: 'isolated-sandboxing', relation: 'enforced by' },
+      { termId: 'atomic-error-code-aec', relation: 'generates on failure' },
+      { termId: 'luk-booking-engine', relation: 'often paired with' },
+    ],
+    notThis: [
+      'Not a payment processor itself—it bridges to external processors like Stripe or PayPal',
+      'Not a billing system—PaymentGateway handles individual transactions, not recurring billing logic',
+    ],
+    lifecycle: 'Introduced in v11. Security model is governed by Explicit Grant from v11 onward.',
+    example: 'A booking plugin completes a reservation. It calls LFX.Util.PaymentGateway.charge({ amount: 5000, currency: "USD", token: "tok_xxx" }). The Gateway routes to the configured processor, returns a receipt, and logs an AEC-tagged audit entry. The plugin never sees raw card data.',
+    futureEvolution: 'v13 may add multi-currency settlement and cross-ecosystem payment routing.',
+  },
+  {
+    id: 'luk-data-connector',
+    name: 'LFX.Util.DataConnector',
+    layer: 'tooling',
+    knowledge: 'optional',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'A specialized bridge utility that handles the Provisioning Handshake between a plugin and its requested database.',
+    mentalModel: 'DataConnector is a bouncer at the data door. Before any plugin can read or write data, DataConnector checks its credentials against the Capability Registry, establishes a secure connection, and monitors the session. No credential, no access.',
+    whyNeeded: 'Plugins must not have direct, unmediated access to databases. DataConnector ensures every data request is authenticated, authorized, and audited, preventing unauthorized reads, writes, or schema modifications.',
+    guarantees: [
+      'All data requests are authenticated against the Capability Registry',
+      'Database connections are provisioned per-plugin, never shared',
+      'Connection failures generate AEC codes for debugging',
+      'Data access is scoped to declared capabilities only',
+    ],
+    antiPatterns: [
+      'Directly connecting to a database from plugin code',
+      'Sharing database credentials between plugins',
+      'Assuming DataConnector provides ORM functionality—it provides connection, not abstraction',
+    ],
+    relationships: [
+      { termId: 'luk-foundation', relation: 'part of' },
+      { termId: 'capability-registry-cr', relation: 'authenticates against' },
+      { termId: 'ecosystem-provisioning', relation: 'uses for resource setup' },
+      { termId: 'atomic-error-code-aec', relation: 'generates on failure' },
+    ],
+    notThis: [
+      'Not an ORM—DataConnector manages connections, not query abstraction',
+      'Not a migration tool—schema changes are managed through Governance',
+    ],
+    lifecycle: 'Introduced in v11. Database provisioning is automated via Ecosystem Provisioning.',
+    example: 'A CRM plugin declares lfx:data:record:read and lfx:data:record:write in its manifest. On activation, DataConnector verifies these capabilities, provisions a scoped database connection, and returns a session handle. The plugin uses this handle for all data operations.',
+    futureEvolution: 'v13 may support cross-plugin data federation through governed DataConnector bridges.',
+  },
+  {
+    id: 'luk-atomic-slot-locking',
+    name: 'Atomic Slot Locking',
+    layer: 'core',
+    knowledge: 'advanced',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'A critical security feature that temporarily holds a time resource during a transaction to prevent race conditions.',
+    mentalModel: 'Atomic Slot Locking is like placing a "Reserved" sign on a restaurant table while the guest is being seated. The slot is held for a defined window—if the transaction completes, the lock becomes permanent; if it times out, the slot is released for others.',
+    whyNeeded: 'In high-concurrency environments, two users can attempt to book the same time slot within milliseconds. Without atomic locking, both would succeed, creating a double-booking. This mechanism prevents race conditions at the system level.',
+    guarantees: [
+      'A locked slot cannot be claimed by another transaction',
+      'Locks automatically expire after a configurable timeout',
+      'Lock acquisition and release are atomic operations',
+      'All lock events generate audit entries with AEC codes',
+    ],
+    antiPatterns: [
+      'Implementing custom locking logic in plugin code',
+      'Setting lock timeouts too long, starving availability',
+      'Relying on UI-level disabling instead of system-level locking',
+    ],
+    relationships: [
+      { termId: 'luk-booking-engine', relation: 'used by' },
+      { termId: 'luk-conflict-policy-enforcement', relation: 'governed by' },
+      { termId: 'luk-real-time-slot-sync', relation: 'triggers UI updates via' },
+      { termId: 'idempotency-gate', relation: 'conceptually similar to' },
+    ],
+    notThis: [
+      'Not a database lock—Atomic Slot Locking is domain-specific to time resources',
+      'Not permanent—locks are transient and expire if uncommitted',
+    ],
+    lifecycle: 'Introduced in v11. Lock timeout defaults and policies are configurable via YAML.',
+    example: 'User A starts booking the 2:00 PM slot. The system acquires an atomic lock. User B sees the 2:00 PM slot greyed out in real-time. If User A completes checkout, the lock converts to a confirmed booking. If User A abandons, the lock expires and the slot reopens.',
+    futureEvolution: 'v13 may introduce distributed locking for cross-instance booking scenarios.',
+  },
+  {
+    id: 'luk-conflict-policy-enforcement',
+    name: 'Conflict Policy Enforcement',
+    layer: 'core',
+    knowledge: 'advanced',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'A set of YAML-defined rules that dictates how a utility handles overlapping data requests.',
+    mentalModel: 'Conflict Policy Enforcement is the rulebook for disputes. When two actions compete for the same resource, this policy decides the outcome—strict prevention, waitlisting, or flexible overbooking. The rules are declared in YAML, not coded in logic.',
+    whyNeeded: 'Different business domains handle conflicts differently. A medical clinic must strictly prevent double-bookings, while a restaurant might allow waitlisting. Conflict policies make this behavior declarative and auditable, not buried in code.',
+    guarantees: [
+      'Conflict resolution is declarative via YAML, not imperative code',
+      'Policy changes do not require code redeployment',
+      'All conflict resolutions are logged with AEC codes',
+      'Policies are versioned and auditable',
+    ],
+    antiPatterns: [
+      'Hardcoding conflict logic in plugin handlers',
+      'Ignoring conflict policies and allowing silent overwrites',
+      'Creating overly permissive policies that undermine data integrity',
+    ],
+    relationships: [
+      { termId: 'luk-atomic-slot-locking', relation: 'governs behavior of' },
+      { termId: 'luk-booking-engine', relation: 'configures' },
+      { termId: 'schema-driven-enforcement', relation: 'architectural pattern from' },
+      { termId: 'protected-rule', relation: 'enforced as' },
+    ],
+    notThis: [
+      'Not merge conflict resolution—this is about resource contention, not version control',
+      'Not a generic validation rule—Conflict Policies specifically handle overlapping resource claims',
+    ],
+    lifecycle: 'Introduced in v11. Conflict policies follow Schema-Driven Enforcement patterns.',
+    example: 'A booking YAML defines: conflict_policy: strict_prevent. When two simultaneous requests target the same slot, the second request receives a CONFLICT_DENIED response with an AEC code, while the first proceeds normally.',
+    futureEvolution: 'v13 may support dynamic conflict policies that adapt based on real-time capacity.',
+  },
+  {
+    id: 'luk-availability-orchestrator',
+    name: 'Availability Orchestrator',
+    layer: 'core',
+    knowledge: 'advanced',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'The internal logic layer that synchronizes static working hours with dynamic existing bookings to generate real-time availability.',
+    mentalModel: 'The Availability Orchestrator is a scheduling conductor. It takes two inputs—what time a provider is theoretically available and what time they are already booked—and produces a live, accurate list of open slots. It runs continuously, not on-demand.',
+    whyNeeded: 'Availability is not a simple subtraction. It involves time zones, buffer periods, break times, recurring schedules, and dynamic cancellations. The Orchestrator handles this complexity so plugins receive clean, ready-to-display availability data.',
+    guarantees: [
+      'Availability reflects real-time state, not cached snapshots',
+      'Time zone conversions are handled internally',
+      'Buffer periods between appointments are enforced',
+      'Cancellations immediately update available slots',
+    ],
+    antiPatterns: [
+      'Caching availability and serving stale data',
+      'Calculating availability in the UI layer',
+      'Ignoring buffer periods between consecutive bookings',
+    ],
+    relationships: [
+      { termId: 'luk-booking-engine', relation: 'powered by' },
+      { termId: 'luk-atomic-slot-locking', relation: 'feeds lock state to' },
+      { termId: 'luk-real-time-slot-sync', relation: 'pushes updates to' },
+      { termId: 'luk-booking-state-persistence', relation: 'reads confirmed state from' },
+    ],
+    notThis: [
+      'Not a calendar view—the Orchestrator is logic, the calendar is UI',
+      'Not a scheduling algorithm—it computes availability, not optimal schedules',
+    ],
+    lifecycle: 'Introduced in v11. Orchestration logic runs as a Core-governed background process.',
+    example: 'A dentist works 9 AM–5 PM with a 1-hour lunch break. They have three existing appointments. The Availability Orchestrator combines these constraints and produces: [9:00, 9:30, 10:30, 11:00, 13:00, 13:30, 14:30, 15:00, 15:30, 16:00, 16:30] as available 30-minute slots.',
+    futureEvolution: 'v13 may integrate Telemetry Insight to predict high-demand periods.',
+  },
+  {
+    id: 'luk-booking-state-persistence',
+    name: 'Booking-State Persistence',
+    layer: 'core',
+    knowledge: 'advanced',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'The automated process ensuring every appointment is saved to the LFX-Governed Database with AEC-backed failure handling.',
+    mentalModel: 'Booking-State Persistence is an infallible scribe. Every confirmed booking is written to the governed database immediately. If the write fails, the scribe does not silently drop it—it raises an Atomic Error Code so the system knows exactly what went wrong.',
+    whyNeeded: 'Lost bookings destroy user trust. Booking-State Persistence ensures that once a user confirms an appointment, it is durably stored. If storage fails, the failure is explicitly surfaced with a unique error code for debugging and recovery.',
+    guarantees: [
+      'Every confirmed booking triggers an immediate database write',
+      'Write failures generate unique AEC codes for audit tracking',
+      'Persistence operations are idempotent—retries do not create duplicates',
+      'All persisted state is governed by LFX database policies',
+    ],
+    antiPatterns: [
+      'Relying on in-memory state without persisting to the governed database',
+      'Silently swallowing write failures',
+      'Storing bookings in plugin-local storage instead of the governed database',
+    ],
+    relationships: [
+      { termId: 'luk-booking-engine', relation: 'feeds into' },
+      { termId: 'atomic-error-code-aec', relation: 'generates on failure' },
+      { termId: 'luk-foundation', relation: 'storage managed by' },
+      { termId: 'idempotency-gate', relation: 'prevents duplicates via' },
+    ],
+    notThis: [
+      'Not a backup system—Persistence is the primary write path, not a secondary copy',
+      'Not event sourcing—Persistence stores current state, not event history',
+    ],
+    lifecycle: 'Introduced in v11. Persistence targets are defined via Ecosystem Provisioning.',
+    example: 'User confirms a 3:00 PM appointment. LUK-Foundation writes { slot: "15:00", provider: "doc-smith", status: "confirmed" } to the governed database. If the write fails, AEC code LFX-BOOK-PERSIST-001 is raised and the user is notified of the retry.',
+    futureEvolution: 'v13 may add cross-region persistence replication for global availability.',
+  },
+  {
+    id: 'luk-surface-utility-binding',
+    name: 'Surface-Utility Binding',
+    layer: 'ui',
+    knowledge: 'optional',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'The process of connecting a visual UI component (the Surface) to an LUK Utility (the Brain) using a Handled Execution hook.',
+    mentalModel: 'Surface-Utility Binding is like plugging a monitor into a computer. The monitor (Surface) displays information but has no intelligence. The computer (Utility) processes logic but has no display. The binding cable (Handled Execution hook) connects them safely.',
+    whyNeeded: 'Keeping UI "dumb" and utilities "smart" is fundamental to maintainability. Surface-Utility Binding formalizes this separation, ensuring that visual components never contain business logic and utilities never contain rendering code.',
+    guarantees: [
+      'UI components receive data only through governed bindings',
+      'Business logic remains in the utility layer, never in the Surface',
+      'Bindings are established through Handled Execution hooks',
+      'Unbinding cleans up all subscriptions and resources',
+    ],
+    antiPatterns: [
+      'Putting business logic directly in UI components',
+      'Bypassing Handled Execution to directly call utility methods from the Surface',
+      'Creating bidirectional dependencies between Surface and Utility',
+    ],
+    relationships: [
+      { termId: 'handled-execution', relation: 'connected via' },
+      { termId: 'surface-orchestration', relation: 'managed by' },
+      { termId: 'luk-booking-engine', relation: 'binds to UI for' },
+      { termId: 'luk-real-time-slot-sync', relation: 'enables' },
+    ],
+    notThis: [
+      'Not data binding in the traditional MVC sense—this is governed, not automatic',
+      'Not two-way binding—data flows from Utility to Surface, actions flow back through Handled Execution',
+    ],
+    lifecycle: 'Introduced in v11. Binding patterns follow Surface Orchestration governance.',
+    example: 'A calendar component (Surface) binds to BookingEngine (Utility) via LFX.handle("booking:slots", calendarRef). The calendar displays slots but never computes them. User clicks are routed back through Handled Execution.',
+    futureEvolution: 'v13 may introduce declarative binding syntax in YAML manifests.',
+  },
+  {
+    id: 'luk-real-time-slot-sync',
+    name: 'Real-Time Slot-Sync',
+    layer: 'ui',
+    knowledge: 'optional',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'A UI-level feature where the Availability Orchestrator pushes live updates to the browser, disabling slots in real-time.',
+    mentalModel: 'Real-Time Slot-Sync is a live scoreboard. As slots are locked or released by other users, the UI updates instantly—buttons grey out, availability shifts, and the user always sees the current truth without refreshing.',
+    whyNeeded: 'Stale availability data leads to failed bookings and frustrated users. Real-Time Slot-Sync ensures that the moment a slot is locked by any user anywhere, all other users see the change immediately, reducing conflicts to near zero.',
+    guarantees: [
+      'Slot state changes propagate to all connected clients within seconds',
+      'UI elements update automatically without manual refresh',
+      'Disconnected clients receive full state resync on reconnection',
+      'Updates respect Capability Registry permissions—users only see authorized slots',
+    ],
+    antiPatterns: [
+      'Polling for availability instead of using push-based sync',
+      'Showing optimistic availability without server confirmation',
+      'Ignoring reconnection scenarios after network interruptions',
+    ],
+    relationships: [
+      { termId: 'luk-availability-orchestrator', relation: 'receives updates from' },
+      { termId: 'luk-atomic-slot-locking', relation: 'reflects lock state from' },
+      { termId: 'luk-surface-utility-binding', relation: 'delivered through' },
+      { termId: 'surface-orchestration', relation: 'governed by' },
+    ],
+    notThis: [
+      'Not WebSocket management—Real-Time Slot-Sync is a feature, not a transport protocol',
+      'Not eventual consistency—updates are near-instantaneous, not lazily propagated',
+    ],
+    lifecycle: 'Introduced in v11. Transport mechanism is abstracted by the Core.',
+    example: 'User A locks the 2:00 PM slot on their device. Within 500ms, User B sees the 2:00 PM button become disabled with a "Being booked" indicator. If User A abandons, the button re-enables for User B automatically.',
+    futureEvolution: 'v13 may add predictive UI hints showing "likely to be booked soon" indicators.',
+  },
+  {
+    id: 'luk-resource-aware-logic',
+    name: 'Resource-Aware Logic',
+    layer: 'meta',
+    knowledge: 'advanced',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'A design principle where a utility\'s behavior automatically adjusts based on the plugin\'s Resource-Capped Tiering.',
+    mentalModel: 'Resource-Aware Logic is like a water faucet that adjusts pressure based on your plan. Free-tier users get standard flow. Pro-tier users get full pressure. The utility does not break for lower tiers—it gracefully adapts its depth and capabilities.',
+    whyNeeded: 'Not all plugins operate at the same resource tier. Resource-Aware Logic ensures utilities degrade gracefully for lower tiers while unlocking full capability for higher tiers, all without requiring the developer to write tier-checking code.',
+    guarantees: [
+      'Utility behavior adapts automatically based on declared tier',
+      'Lower tiers receive functional but reduced capability, never errors',
+      'Tier boundaries are enforced by the Core, not by plugin code',
+      'Tier changes take effect without redeployment',
+    ],
+    antiPatterns: [
+      'Hardcoding tier checks in plugin logic',
+      'Assuming all plugins have Pro-tier resources',
+      'Breaking functionality for lower tiers instead of gracefully reducing',
+    ],
+    relationships: [
+      { termId: 'resource-capped-tiering', relation: 'adapts based on' },
+      { termId: 'luk-universal-search', relation: 'adjusts search depth for' },
+      { termId: 'luk-foundation', relation: 'governed by' },
+      { termId: 'growth-graduation', relation: 'tier progression via' },
+    ],
+    notThis: [
+      'Not feature flags—Resource-Aware Logic adjusts depth, not feature availability',
+      'Not throttling—it is adaptive behavior, not rate limiting',
+    ],
+    lifecycle: 'Introduced in v11. Resource tiers are defined in the plugin manifest YAML.',
+    example: 'A search plugin on the Free tier calls UniversalSearch. The utility returns results from a standard keyword index. The same plugin on Pro tier receives vector-based semantic results with deeper relevance ranking—same API call, different depth.',
+    futureEvolution: 'v13 may introduce dynamic tier negotiation for burst workloads.',
+  },
+  {
+    id: 'luk-utility-namespace-isolation',
+    name: 'Utility-Namespace Isolation',
+    layer: 'meta',
+    knowledge: 'advanced',
+    status: 'stable',
+    version: 'v11.0',
+    section: 'luk',
+    oneLine: 'The requirement that every LUK utility operates within its own bounded logic space, preventing cross-utility failure propagation.',
+    mentalModel: 'Utility-Namespace Isolation is like fireproof compartments on a ship. If the BookingEngine catches fire, the PaymentGateway compartment is unaffected. Each utility runs in its own namespace, with its own error boundaries and state.',
+    whyNeeded: 'In a complex utility ecosystem, a failure in one utility must not cascade to others. Namespace isolation ensures that each utility is independently deployable, testable, and recoverable without affecting its neighbors.',
+    guarantees: [
+      'A failure in one utility cannot propagate to another',
+      'Each utility maintains its own error boundary and state',
+      'Utilities communicate only through governed interfaces, never shared memory',
+      'Namespace violations are detected and reported as Governance Violations',
+    ],
+    antiPatterns: [
+      'Sharing state between utilities through global variables',
+      'Catching errors from one utility inside another utility\'s handler',
+      'Creating implicit dependencies between utility namespaces',
+    ],
+    relationships: [
+      { termId: 'lfx-namespace', relation: 'naming convention from' },
+      { termId: 'isolated-sandboxing', relation: 'security model from' },
+      { termId: 'plugin-sandbox', relation: 'architectural pattern from' },
+      { termId: 'governance-violation', relation: 'reported as' },
+    ],
+    notThis: [
+      'Not process isolation—utilities may share a runtime, but their logic spaces are separate',
+      'Not microservices—utilities are in-process modules with namespace boundaries',
+    ],
+    lifecycle: 'Introduced in v11. Namespace boundaries are enforced by the LFX Core at runtime.',
+    example: 'The BookingEngine encounters a database timeout. It raises AEC code LFX-BOOK-DB-001 and enters recovery. Meanwhile, PaymentGateway continues processing transactions normally—it never receives or reacts to BookingEngine\'s error.',
+    futureEvolution: 'v13 may introduce cross-namespace communication protocols for coordinated workflows.',
+  },
+];
+
+// Combine all terminology
+export const allTerminology: Term[] = [...terminology, ...lukTerminology];
+
 export function getTermById(id: string): Term | undefined {
-  return terminology.find(t => t.id === id);
+  return allTerminology.find(t => t.id === id);
 }
 
 export function getTermsByLayer(layer: Layer): Term[] {
-  return terminology.filter(t => t.layer === layer);
+  return allTerminology.filter(t => t.layer === layer);
 }
 
 export function getTermsByKnowledge(knowledge: Knowledge): Term[] {
-  return terminology.filter(t => t.knowledge === knowledge);
+  return allTerminology.filter(t => t.knowledge === knowledge);
+}
+
+export function getTermsBySection(section: Section): Term[] {
+  if (section === 'luk') return lukTerminology;
+  return terminology;
 }
 
 export function getRelatedTerms(termId: string): Term[] {
