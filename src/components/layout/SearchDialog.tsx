@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { terminology, layerInfo, type Term, type Layer } from '@/data/terminology';
+import { allTerminology as terminology, layerInfo, type Term, type Layer } from '@/data/terminology';
 import { Badge } from '@/components/ui/badge';
 import { Search, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
