@@ -3846,7 +3846,6 @@ export const lukTerminology: Term[] = [
     example: 'The BookingEngine encounters a database timeout. It raises AEC code LFX-BOOK-DB-001 and enters recovery. Meanwhile, PaymentGateway continues processing transactions normally—it never receives or reacts to BookingEngine\'s error.',
     futureEvolution: 'v13 may introduce cross-namespace communication protocols for coordinated workflows.',
   },
-  },
   // === Orchestration Layer (v12) ===
   {
     id: 'luk-orchestra',
