@@ -1,4 +1,4 @@
-import { type Term, layerInfo, getTermById, getRelatedTerms } from '@/data/terminology';
+import { type Term, layerInfo, getTermById, getRelatedTerms, domainInfo } from '@/data/terminology';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, 
@@ -47,6 +47,15 @@ export function TermDetail({ term, onBack, onTermSelect }: TermDetailProps) {
           <Badge variant={term.status}>
             {term.status}
           </Badge>
+          {term.domain && (
+            <span className={cn(
+              "px-2.5 py-1 text-xs font-medium rounded-md",
+              "bg-gradient-to-r backdrop-blur-sm border",
+              domainInfo[term.domain].color
+            )}>
+              {domainInfo[term.domain].label}
+            </span>
+          )}
           <span className="text-sm font-mono text-muted-foreground ml-auto">
             {term.version}
           </span>
@@ -66,6 +75,19 @@ export function TermDetail({ term, onBack, onTermSelect }: TermDetailProps) {
         <p className="text-xl text-muted-foreground leading-relaxed">
           {term.oneLine}
         </p>
+
+        {term.domain && (
+          <div className="mt-4 flex items-center gap-3">
+            <span className="text-sm text-muted-foreground font-medium">Primary Domain:</span>
+            <span className={cn(
+              "px-3 py-1 text-sm font-semibold rounded-lg",
+              "bg-gradient-to-r backdrop-blur-sm border",
+              domainInfo[term.domain].color
+            )}>
+              {domainInfo[term.domain].label}
+            </span>
+          </div>
+        )}
       </header>
 
       {/* Mental Model */}

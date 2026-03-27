@@ -1,4 +1,4 @@
-import { type Term, layerInfo, getTermById } from '@/data/terminology';
+import { type Term, layerInfo, getTermById, domainInfo } from '@/data/terminology';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,16 @@ export function TermCard({ term, onClick, variant = 'default' }: TermCardProps) 
         <span className="font-mono font-medium text-foreground group-hover:text-primary transition-colors">
           {term.name}
         </span>
-        <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+        {term.domain && (
+          <span className={cn(
+            "ml-auto mr-2 px-2 py-0.5 text-[10px] font-medium rounded-md",
+            "bg-gradient-to-r backdrop-blur-sm border",
+            domainInfo[term.domain].color
+          )}>
+            {domainInfo[term.domain].label}
+          </span>
+        )}
+        <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
       </button>
     );
   }
@@ -63,9 +72,20 @@ export function TermCard({ term, onClick, variant = 'default' }: TermCardProps) 
               </Badge>
             )}
           </div>
-          <span className="text-xs font-mono text-muted-foreground shrink-0">
-            {term.version}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            {term.domain && (
+              <span className={cn(
+                "px-2 py-0.5 text-[10px] font-medium rounded-md",
+                "bg-gradient-to-r backdrop-blur-sm border",
+                domainInfo[term.domain].color
+              )}>
+                {domainInfo[term.domain].label}
+              </span>
+            )}
+            <span className="text-xs font-mono text-muted-foreground">
+              {term.version}
+            </span>
+          </div>
         </div>
         
         <h3 className={cn(

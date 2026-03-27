@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { terminology, lukTerminology, layerInfo, type Layer, type Knowledge, type Section } from '@/data/terminology';
+import { terminology, lukTerminology, layerInfo, domainInfo, type Layer, type Knowledge, type Section, type Domain } from '@/data/terminology';
 import { TermCard } from './TermCard';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Filter, LayoutGrid, List, Sparkles, Box, Wrench } from 'lucide-react';
+import { Filter, LayoutGrid, List, Sparkles, Box, Wrench, Globe } from 'lucide-react';
 
 interface TerminologyGridProps {
   onTermSelect: (termId: string) => void;
@@ -11,11 +11,13 @@ interface TerminologyGridProps {
 
 const layers: Layer[] = ['core', 'plugin', 'ui', 'tooling', 'meta'];
 const knowledgeLevels: Knowledge[] = ['mandatory', 'optional', 'advanced'];
+const domains: Domain[] = ['universal', 'e-commerce', 'finance'];
 
 export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
   const [activeSection, setActiveSection] = useState<Section>('core-ecosystem');
   const [activeLayer, setActiveLayer] = useState<Layer | 'all'>('all');
   const [activeKnowledge, setActiveKnowledge] = useState<Knowledge | 'all'>('all');
+  const [activeDomain, setActiveDomain] = useState<Domain | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const sourceTerms = activeSection === 'luk' ? lukTerminology : terminology;
@@ -23,12 +25,12 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
   const filteredTerms = sourceTerms.filter(term => {
     if (activeLayer !== 'all' && term.layer !== activeLayer) return false;
     if (activeKnowledge !== 'all' && term.knowledge !== activeKnowledge) return false;
+    if (activeSection === 'luk' && activeDomain !== 'all' && term.domain !== activeDomain) return false;
     return true;
   });
 
   const mandatoryCount = sourceTerms.filter(t => t.knowledge === 'mandatory').length;
 
-  // Check if a layer has terms in the current section
   const layerHasTerms = (layer: Layer) => sourceTerms.some(t => t.layer === layer);
 
   return (
@@ -66,7 +68,7 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
       <div className="mb-8">
         <div className="inline-flex items-center rounded-lg border border-border bg-card p-1 gap-1">
           <button
-            onClick={() => { setActiveSection('core-ecosystem'); setActiveLayer('all'); setActiveKnowledge('all'); }}
+            onClick={() => { setActiveSection('core-ecosystem'); setActiveLayer('all'); setActiveKnowledge('all'); setActiveDomain('all'); }}
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200",
               activeSection === 'core-ecosystem'
@@ -78,7 +80,7 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
             Core Ecosystem
           </button>
           <button
-            onClick={() => { setActiveSection('luk'); setActiveLayer('all'); setActiveKnowledge('all'); }}
+            onClick={() => { setActiveSection('luk'); setActiveLayer('all'); setActiveKnowledge('all'); setActiveDomain('all'); }}
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200",
               activeSection === 'luk'
@@ -152,6 +154,41 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
         </div>
       </div>
 
+      {/* Domain filter - only for LUK */}
+      {activeSection === 'luk' && (
+        <div className="flex flex-wrap items-center gap-2 mb-6 pb-6 border-b border-border">
+          <div className="flex items-center gap-2 mr-2">
+            <Globe className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Industry Domain:</span>
+          </div>
+          <button
+            onClick={() => setActiveDomain('all')}
+            className={cn(
+              "px-3 py-1 text-sm rounded-full border transition-colors",
+              activeDomain === 'all'
+                ? "border-primary text-primary"
+                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+            )}
+          >
+            All
+          </button>
+          {domains.map(domain => (
+            <button
+              key={domain}
+              onClick={() => setActiveDomain(domain)}
+              className={cn(
+                "px-3 py-1 text-sm rounded-full border backdrop-blur-sm transition-all",
+                activeDomain === domain
+                  ? cn("bg-gradient-to-r", domainInfo[domain].color)
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+              )}
+            >
+              {domainInfo[domain].label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Knowledge filter */}
       <div className="flex flex-wrap items-center gap-2 mb-8 pb-6 border-b border-border">
         <span className="text-sm text-muted-foreground mr-2">Knowledge:</span>
@@ -191,6 +228,9 @@ export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
           )}
           {activeKnowledge !== 'all' && (
             <> ({activeKnowledge})</>
+          )}
+          {activeDomain !== 'all' && (
+            <> · <span className={cn("font-medium", domainInfo[activeDomain].color.split(' ').pop())}>{domainInfo[activeDomain].label}</span> domain</>
           )}
         </p>
       </div>
