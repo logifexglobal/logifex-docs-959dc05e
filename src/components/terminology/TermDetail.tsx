@@ -75,6 +75,19 @@ export function TermDetail({ term, onBack, onTermSelect }: TermDetailProps) {
         <p className="text-xl text-muted-foreground leading-relaxed">
           {term.oneLine}
         </p>
+
+        {term.domain && (
+          <div className="mt-4 flex items-center gap-3">
+            <span className="text-sm text-muted-foreground font-medium">Primary Domain:</span>
+            <span className={cn(
+              "px-3 py-1 text-sm font-semibold rounded-lg",
+              "bg-gradient-to-r backdrop-blur-sm border",
+              domainInfo[term.domain].color
+            )}>
+              {domainInfo[term.domain].label}
+            </span>
+          </div>
+        )}
       </header>
 
       {/* Mental Model */}
