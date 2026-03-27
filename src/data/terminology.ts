@@ -2,6 +2,13 @@ export type Layer = 'core' | 'plugin' | 'ui' | 'tooling' | 'meta';
 export type Knowledge = 'mandatory' | 'optional' | 'advanced';
 export type Status = 'stable' | 'beta' | 'deprecated';
 export type Section = 'core-ecosystem' | 'luk';
+export type Domain = 'universal' | 'e-commerce' | 'finance';
+
+export const domainInfo: Record<Domain, { label: string; color: string }> = {
+  universal: { label: 'Universal', color: 'from-blue-400/20 to-blue-500/5 border-blue-400/30 text-blue-300' },
+  'e-commerce': { label: 'E-Commerce', color: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30 text-emerald-300' },
+  finance: { label: 'Finance', color: 'from-amber-400/20 to-amber-500/5 border-amber-400/30 text-amber-300' },
+};
 
 export interface Term {
   id: string;
@@ -11,6 +18,7 @@ export interface Term {
   status: Status;
   version: string;
   section?: Section;
+  domain?: Domain;
   oneLine: string;
   mentalModel: string;
   whyNeeded: string;
