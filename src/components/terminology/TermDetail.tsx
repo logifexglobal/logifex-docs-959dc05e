@@ -1,4 +1,4 @@
-import { type Term, layerInfo, getTermById, getRelatedTerms } from '@/data/terminology';
+import { type Term, layerInfo, getTermById, getRelatedTerms, domainInfo } from '@/data/terminology';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, 
@@ -47,6 +47,15 @@ export function TermDetail({ term, onBack, onTermSelect }: TermDetailProps) {
           <Badge variant={term.status}>
             {term.status}
           </Badge>
+          {term.domain && (
+            <span className={cn(
+              "px-2.5 py-1 text-xs font-medium rounded-md",
+              "bg-gradient-to-r backdrop-blur-sm border",
+              domainInfo[term.domain].color
+            )}>
+              {domainInfo[term.domain].label}
+            </span>
+          )}
           <span className="text-sm font-mono text-muted-foreground ml-auto">
             {term.version}
           </span>
