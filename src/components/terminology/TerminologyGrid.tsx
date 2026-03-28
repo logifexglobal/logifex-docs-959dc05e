@@ -11,7 +11,7 @@ interface TerminologyGridProps {
 
 const layers: Layer[] = ['core', 'plugin', 'ui', 'tooling', 'meta'];
 const knowledgeLevels: Knowledge[] = ['mandatory', 'optional', 'advanced'];
-const domains: Domain[] = ['universal', 'e-commerce', 'finance'];
+const domains: Domain[] = ['universal', 'e-commerce', 'finance', 'healthcare', 'real-estate'];
 
 export function TerminologyGrid({ onTermSelect }: TerminologyGridProps) {
   const [activeSection, setActiveSection] = useState<Section>('core-ecosystem');
